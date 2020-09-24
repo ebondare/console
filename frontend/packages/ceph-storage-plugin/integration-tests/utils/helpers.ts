@@ -176,6 +176,9 @@ export const hasOCSTaint = (node) => {
 export const createObjectFromJson = (objectJson) =>
   execSync(`echo '${JSON.stringify(objectJson)}' | kubectl create -f -`);
 
+export const scaleDeployment = (deployment, namespace, targetValue) =>
+  execSync(`kubectl scale deployment ${deployment} -n ${namespace} --replicas=${targetValue}`);
+
 export type NodeType = {
   id: number;
   name: string;

@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { browser } from 'protractor';
 import {
   allNodes,
   allPvcs,
@@ -6,16 +7,19 @@ import {
   clusterHealth,
   clusterName,
   goToStorageDashboard,
+  healthSubtitle,
   serviceName,
 } from '../../views/storage-dashboard.view';
 import { createNewPersistentVolumeClaim, deletePersistentVolumeClaim } from '../../views/pvc.view';
-import { EXAMPLE_PVC, OCP_HEALTH_ICON_COLORS } from '../../utils/consts';
+import { EXAMPLE_PVC, NS, OCP_HEALTH_ICON_COLORS, MINUTE } from '../../utils/consts';
+import { scaleDeployment } from '../../utils/helpers';
 
 const OCS_SERVICE_NAME = 'OpenShift Container Storage';
 
 describe('Check data on Persistent Storage Dashboard.', () => {
   beforeAll(async () => {
     await goToStorageDashboard();
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 5 * MINUTE;
   });
 
   it('Check cluster is healthy', () => {
@@ -59,5 +63,15 @@ describe('Check data on Persistent Storage Dashboard.', () => {
     const newPvsNumber = Number(allPvs.getText());
     await deletePersistentVolumeClaim(EXAMPLE_PVC.name, EXAMPLE_PVC.namespace);
     expect(newPvsNumber).toEqual(pvsNumber + 1);
+  });
+
+  it('Check that OCS cluster changes to Warning status if an osd is down', async () => {
+    await goToStorageDashboard();
+    scaleDeployment('rook-ceph-osd-1', NS, '0');
+    await browser.sleep(1 * MINUTE);
+    expect(clusterHealth.getAttribute('fill')).toEqual(OCP_HEALTH_ICON_COLORS.YELLOW);
+    expect(healthSubtitle.getText()).toEqual('Warning');
+    scaleDeployment('rook-ceph-osd-1', NS, '1');
+    await browser.sleep(1 * MINUTE);
   });
 });

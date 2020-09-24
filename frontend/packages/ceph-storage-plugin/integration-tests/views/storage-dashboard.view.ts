@@ -4,6 +4,7 @@ import { isLoaded } from '@console/shared/src/test-views/dashboard-shared.view';
 
 // export const clusterHealth = $('[class="co-dashboard-text--small co-health-card__text"]');
 export const clusterHealth = $('div.co-status-card__health-item div svg');
+export const healthSubtitle = $('.co-status-card__health-item-subtitle');
 export const detailsCardStructure = $$('.co-details-card__body dt');
 const clusterDetails = $$('.co-details-card__body dd');
 export const serviceName = clusterDetails.get(0);
